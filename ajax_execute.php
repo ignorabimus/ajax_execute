@@ -40,7 +40,15 @@ if (is_resource($process)) {
             $output .= "error";
             proc_terminate($process);
             break;
-        } else if ($ret === 0 || $tv_usec < 0) {
+        }
+
+        foreach ($read as $sock) {
+            $output .= fgets($sock, LIMIT_COLS);
+        }
+
+        $tv_usec -= (integer)((microtime(true) - $time_start) * 1000000);
+
+        if ($ret === 0 || $tv_usec < 0) {
             $output .= "timeout";
             proc_terminate($process);
             break;
@@ -49,12 +57,6 @@ if (is_resource($process)) {
             proc_terminate($process);
             break;
         }
-
-        foreach ($read as $sock) {
-            $output .= fgets($sock, LIMIT_COLS);
-        }
-
-        $tv_usec -= (integer)((microtime(true) - $time_start) * 1000000);
     }
 
     print(json_encode($output));
